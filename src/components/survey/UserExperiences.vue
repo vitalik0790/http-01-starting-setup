@@ -3,9 +3,16 @@
     <base-card>
       <h2>Submitted Experiences</h2>
       <div>
-        <base-button>Load Submitted Experiences</base-button>
+        <base-button @click="loadExperiences"
+          >Load Submitted Experiences</base-button
+        >
       </div>
-      <ul>
+      <p v-if="isLoading">Loading...</p>
+      <p v-else-if="!isLoading && error">{{ error }}</p>
+      <p v-else-if="!isLoading && (!results || results.length === 0)">
+        No stored experiences found. Start adding some survey results first.
+      </p>
+      <ul v-else>
         <survey-result
           v-for="result in results"
           :key="result.id"
@@ -18,12 +25,53 @@
 </template>
 
 <script>
+const axios = require('axios');
 import SurveyResult from './SurveyResult.vue';
 
 export default {
-  props: ['results'],
+  // props: ['results'],
+  data() {
+    return {
+      results: [],
+      isLoading: false,
+      error: null,
+    };
+  },
   components: {
     SurveyResult,
+  },
+  methods: {
+    loadExperiences() {
+      this.isLoading = true;
+      axios
+        .get(
+          'https://vue-http-demo-19c68-default-rtdb.europe-west1.firebasedatabase.app/surveys.json'
+        )
+        .then((response) => {
+          return response.data;
+        })
+        .then((data) => {
+          this.isLoading = false;
+          this.error = null;
+          const results = [];
+          for (const id in data) {
+            results.push({
+              id: id,
+              name: data[id].name,
+              rating: data[id].rating,
+            });
+          }
+          this.results = results;
+        })
+        .catch((error) => {
+          console.log(error);
+          this.isLoading = false;
+          this.error = 'Failed to fetch data - please try again later.';
+        });
+    },
+  },
+  mounted() {
+    this.loadExperiences();
   },
 };
 </script>

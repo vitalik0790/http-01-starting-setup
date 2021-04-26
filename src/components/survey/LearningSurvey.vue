@@ -9,7 +9,13 @@
         </div>
         <h3>My learning experience was ...</h3>
         <div class="form-control">
-          <input type="radio" id="rating-poor" value="poor" name="rating" v-model="chosenRating" />
+          <input
+            type="radio"
+            id="rating-poor"
+            value="poor"
+            name="rating"
+            v-model="chosenRating"
+          />
           <label for="rating-poor">Poor</label>
         </div>
         <div class="form-control">
@@ -23,12 +29,19 @@
           <label for="rating-average">Average</label>
         </div>
         <div class="form-control">
-          <input type="radio" id="rating-great" value="great" name="rating" v-model="chosenRating" />
+          <input
+            type="radio"
+            id="rating-great"
+            value="great"
+            name="rating"
+            v-model="chosenRating"
+          />
           <label for="rating-great">Great</label>
         </div>
-        <p
-          v-if="invalidInput"
-        >One or more input fields are invalid. Please check your provided data.</p>
+        <p v-if="invalidInput">
+          One or more input fields are invalid. Please check your provided data.
+        </p>
+        <p v-if="error">{{ error }}</p>
         <div>
           <base-button>Submit</base-button>
         </div>
@@ -38,15 +51,18 @@
 </template>
 
 <script>
+const axios = require('axios');
+
 export default {
   data() {
     return {
       enteredName: '',
       chosenRating: null,
       invalidInput: false,
+      error: null,
     };
   },
-  emits: ['survey-submit'],
+  // emits: ['survey-submit'],
   methods: {
     submitSurvey() {
       if (this.enteredName === '' || !this.chosenRating) {
@@ -54,11 +70,20 @@ export default {
         return;
       }
       this.invalidInput = false;
+      this.error = null;
 
-      this.$emit('survey-submit', {
-        userName: this.enteredName,
-        rating: this.chosenRating,
-      });
+      axios
+        .post(
+          'https://vue-http-demo-19c68-default-rtdb.europe-west1.firebasedatabase.app/surveys.json',
+          {
+            name: this.enteredName,
+            rating: this.chosenRating,
+          }
+        )
+        .catch((error) => {
+          console.log(error);
+          this.error = 'Something went wrong - try again later.';
+        });
 
       this.enteredName = '';
       this.chosenRating = null;
