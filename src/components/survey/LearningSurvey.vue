@@ -80,9 +80,16 @@ export default {
             rating: this.chosenRating,
           }
         )
+        .then((response) => {
+          if (response) {
+            // ...
+          } else {
+            throw new Error('Could not save data!');
+          }
+        })
         .catch((error) => {
           console.log(error);
-          this.error = 'Something went wrong - try again later.';
+          this.error = error.message;
         });
 
       this.enteredName = '';
